@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#150b0f">
+  <title>My ToolBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="tools.css">
+  <style>
+    .unified-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 12px 16px;
+      margin: 0 0 26px;
+      border: 1px solid rgba(237, 230, 212, .14);
+      border-radius: 18px;
+      background: rgba(35, 22, 27, .88);
+      scrollbar-width: thin;
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+      backdrop-filter: blur(14px)
+    }
+
+    .nav-tab {
+      flex: 0 0 auto;
+      border: 1px solid rgba(237, 230, 212, .16);
+      border-radius: 11px;
+      background: transparent;
+      color: #ede6d4;
+      padding: 11px 15px;
+      font: 600 14px 'DM Sans', sans-serif;
+      cursor: pointer
+    }
+
+    .nav-tab:hover,
+    .nav-tab.active {
+      background: #512833;
+      border-color: #8b2c3d;
+      color: #fff
+    }
+
+    .tab-pane[hidden] {
+      display: none !important
+    }
+
+    .tab-pane {
+      animation: tabIn .18s ease-out
+    }
+
+    @keyframes tabIn {
+      from {
+        opacity: .65;
+        transform: translateY(4px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .tool-panel {
+      margin-bottom: 24px
+    }
+
+    .tool-panel[hidden] {
+      display: none !important
+    }
+
+    body {
+      scroll-behavior: smooth
+    }
+
+    @media(max-width:650px) {
+      .unified-nav {
+        margin-bottom: 18px;
+        padding: 9px
+      }
+
+      .nav-tab {
+        padding: 9px 12px;
+        font-size: 13px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <main class="app-shell">
+    <header class="topbar"><a class="brand" href="#qrPane" aria-label="My ToolBox home"><span
+          class="brand-mark"><span></span><span></span><span></span><span></span></span><span>My <span
+            class="brand-accent">ToolBox</span></span></a>
+    </header>
+    <nav class="unified-nav" aria-label="Tool navigation">
+      <button class="nav-tab active" data-tab="qrPane">QR Generator</button>
+      <button class="nav-tab" data-tab="imageTool">01 Image</button>
+      <button class="nav-tab" data-tab="pdfTool">02 PDF</button>
+      <button class="nav-tab" data-tab="devTool">03 Developer</button>
+      <button class="nav-tab" data-tab="audioTool">04 Audio</button>
+      <button class="nav-tab" data-tab="colorTool">05 Colors</button>
+      <button class="nav-tab" data-tab="unitTool">06 Unit Converter</button>
+    </nav>
+    <div id="qrPane" class="tab-pane">
+
+      <section class="workspace">
+        <div class="editor glass-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="step-label">01 / CUSTOMIZE</span>
+              <h2>Your QR code</h2>
+            </div>
+            <span class="sparkle" aria-hidden="true">✳</span>
+          </div>
+
+          <label class="field-label" for="qrText">Text or URL</label>
+          <textarea id="qrText" rows="3" maxlength="1800"
+            placeholder="https://yourwebsite.com">https://example.com</textarea>
+          <div class="field-hint"><span>Paste a link or type any message</span><span id="charCount">19 / 1800</span>
+          </div>
+
+          <div class="section-divider"></div>
+          <div class="subheading-row">
+            <h3>Color palette</h3>
+            <span class="tiny-label">MAKE IT YOURS</span>
+          </div>
+          <div class="color-grid">
+            <label class="color-control">
+              <span>QR color</span>
+              <span class="color-picker-wrap"><input type="color" id="fgColor" value="#8b2c3d"><code
+                  id="fgHex">#8B2C3D</code></span>
+            </label>
+            <label class="color-control">
+              <span>Background</span>
+              <span class="color-picker-wrap"><input type="color" id="bgColor" value="#ffffff"><code
+                  id="bgHex">#FFFFFF</code></span>
+            </label>
+          </div>
+          <div class="swatches" aria-label="Preset color themes">
+            <button class="swatch swatch-dark active" data-fg="#8b2c3d" data-bg="#ffffff"
+              aria-label="Burgundy theme"></button>
+            <button class="swatch swatch-purple" data-fg="#211b20" data-bg="#f4e9e4"
+              aria-label="Midnight theme"></button>
+            <button class="swatch swatch-green" data-fg="#516345" data-bg="#f4f7ef" aria-label="Forest theme"></button>
+            <button class="swatch swatch-pink" data-fg="#8b2c3d" data-bg="#fff4f5" aria-label="Rose theme"></button>
+            <button class="swatch swatch-blue" data-fg="#80601e" data-bg="#fffdf5" aria-label="Gold theme"></button>
+          </div>
+
+          <div class="section-divider"></div>
+          <div class="subheading-row">
+            <h3>Output size</h3>
+            <output id="sizeValue" for="qrSize">320 px</output>
+          </div>
+          <input type="range" id="qrSize" min="180" max="600" step="20" value="320" />
+          <div class="range-labels"><span>180 px</span><span>600 px</span></div>
+
+          <div class="section-divider"></div>
+          <div class="subheading-row">
+            <h3>Center logo</h3>
+            <span class="tiny-label">OPTIONAL</span>
+          </div>
+          <label class="upload-zone" for="logoInput" id="uploadZone">
+            <span class="upload-icon">↑</span>
+            <span class="upload-copy"><strong id="uploadTitle">Upload your logo</strong><small id="uploadSub">PNG or JPG
+                · square image works best</small></span>
+            <span class="upload-action">Browse</span>
+          </label>
+          <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp" hidden />
+          <button class="remove-logo" id="removeLogo" type="button" hidden>Remove logo</button>
+          <p class="small-note">Tip: keep the logo small so your QR code remains easy to scan.</p>
+
+          <div class="action-row">
+            <button class="button button-quiet" id="resetBtn" type="button">Reset</button>
+            <button class="button button-primary" id="downloadBtn" type="button"><span>↓</span> Download PNG</button>
+          </div>
+          <p class="notice" id="notice" role="status" aria-live="polite"></p>
+        </div>
+
+        <aside class="preview-column">
+          <div class="preview-card glass-panel">
+            <div class="preview-topline"><span class="step-label">02 / LIVE PREVIEW</span><span
+                class="live-pill"><span></span> LIVE</span></div>
+            <div class="qr-stage">
+              <div class="qr-frame">
+                <div id="qrCode" aria-label="Generated QR code preview"></div>
+              </div>
+              <div class="qr-orbit orbit-one"></div>
+              <div class="qr-orbit orbit-two"></div>
+              <span class="float-star star-one">✳</span>
+              <span class="float-star star-two">✦</span>
+            </div>
+            <div class="preview-caption">
+              <span class="caption-icon">⌁</span>
+              <div><strong>Ready to scan</strong><small>Your QR code updates as you customize it.</small></div>
+            </div>
+          </div>
+
+          <div class="tip-card">
+            <div class="tip-icon">✦</div>
+            <div><strong>A little pro tip</strong>
+              <p>Use strong contrast between your QR color and background. Always test-scan your downloaded code before
+                printing it.</p>
+            </div>
+          </div>
+          <div class="privacy-note"><span class="lock-icon">▣</span> Generated in your browser. Your content stays on
+            your device.</div>
+        </aside>
+      </section>
+    </div>
+    <section id="imageTool" class="tool-panel tab-pane" data-pane="imageTool" hidden>
+      <div class="panel-head">
+        <div>
+          <p class="kicker">01 / IMAGE CONVERTER</p>
+          <h2>Convert & resize images</h2>
+          <p>Convert common image files to PNG, JPEG, or WebP and adjust output size.</p>
+        </div>
+      </div><label class="dropzone"> <span>＋</span><strong>Choose an image</strong><small>PNG, JPG, WebP, AVIF supported
+          by your browser</small><input id="imageFile" type="file" accept="image/*"></label>
+      <div class="form-grid"><label>Output format<select id="imageFormat">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/webp">WebP</option>
+          </select></label><label>Quality <output id="qualityOut">90%</output><input id="imageQuality" type="range"
+            min="10" max="100" value="90"></label><label>Width (px)<input id="imageWidth" type="number" min="1"
+            placeholder="Original width"></label><label>Height (px)<input id="imageHeight" type="number" min="1"
+            placeholder="Original height"></label></div>
+      <div class="preview-row"><img id="imagePreview" alt="Image preview" hidden>
+        <p id="imageMeta" class="muted">Select an image to preview it.</p>
+      </div><button class="primary" id="convertImage">Convert & download</button>
+      <p class="notice" id="imageNotice" role="status"></p>
+    </section>
+    <section id="pdfTool" class="tool-panel tab-pane" data-pane="pdfTool" hidden>
+      <p class="kicker">02 / PDF TOOLKIT</p>
+      <h2>Images to PDF</h2>
+      <p>Turn one or more images into a downloadable PDF. For PDF merge/split and page extraction, use a dedicated PDF
+        editor.</p><label class="dropzone"><span>＋</span><strong>Select images</strong><small>Choose multiple PNG or
+          JPEG images in page order</small><input id="pdfImages" type="file" accept="image/png,image/jpeg"
+          multiple></label>
+      <div id="pdfList" class="muted">No images selected.</div><button class="primary" id="makePdf">Create PDF</button>
+      <p class="notice" id="pdfNotice" role="status"></p>
+    </section>
+    <section id="devTool" class="tool-panel tab-pane" data-pane="devTool" hidden>
+      <p class="kicker">03 / DEVELOPER UTILITIES</p>
+      <h2>Data & text converters</h2>
+      <p>Format JSON, convert CSV and JSON, or encode/decode Base64 and URL text.</p>
+      <div class="form-grid"><label>Operation<select id="devMode">
+            <option value="json">Format / validate JSON</option>
+            <option value="csvjson">CSV → JSON</option>
+            <option value="jsoncsv">JSON → CSV</option>
+            <option value="b64e">Text → Base64</option>
+            <option value="b64d">Base64 → Text</option>
+            <option value="urle">URL encode</option>
+            <option value="urld">URL decode</option>
+          </select></label><label>Output actions<button class="secondary" id="copyDev" type="button">Copy
+            output</button></label></div><label class="full-label">Input<textarea id="devInput" rows="7"
+          placeholder='Paste JSON, CSV, or text here...'></textarea></label><button class="primary"
+        id="runDev">Convert</button><label class="full-label">Output<textarea id="devOutput" rows="7" readonly
+          placeholder="Your result appears here..."></textarea></label>
+      <p class="notice" id="devNotice" role="status"></p>
+    </section>
+    <section id="audioTool" class="tool-panel tab-pane" data-pane="audioTool" hidden>
+      <p class="kicker">04 / AUDIO CONVERTER</p>
+      <h2>Audio to WAV</h2>
+      <p>Decode a supported audio file and export it as uncompressed WAV. Browser codec support varies; this tool does
+        not currently encode MP3 or FLAC.</p><label class="dropzone"><span>♫</span><strong>Select audio
+          file</strong><small>MP3, WAV, OGG, M4A and other browser-supported formats</small><input id="audioFile"
+          type="file" accept="audio/*"></label><audio id="audioPreview" controls hidden></audio>
+      <p id="audioMeta" class="muted">No audio selected.</p><button class="primary" id="convertAudio">Convert to
+        WAV</button>
+      <p class="notice" id="audioNotice" role="status"></p>
+    </section>
+    <section id="colorTool" class="tool-panel tab-pane" data-pane="colorTool" hidden>
+      <p class="kicker">05 / COLOR CONVERTER</p>
+      <h2>Color lab</h2>
+      <p>Convert HEX, RGB, and HSL values, preview the color, and check contrast against a background.</p>
+      <div class="color-layout">
+        <div><label class="full-label">Pick a color<input id="colorPicker" type="color" value="#8b2c3d"></label><label
+            class="full-label">HEX<input id="hexInput" value="#8B2C3D" maxlength="7"></label><label
+            class="full-label">RGB<input id="rgbOutput" readonly></label><label class="full-label">HSL<input
+              id="hslOutput" readonly></label></div>
+        <div>
+          <div id="colorSwatch" class="color-swatch"></div><label class="full-label">Contrast background<input
+              id="contrastPicker" type="color" value="#ffffff"></label>
+          <div id="contrastResult" class="contrast-result"></div><button class="secondary" id="copyHex">Copy
+            HEX</button>
+        </div>
+      </div>
+      <div class="palette">
+        <h3>Quick palette</h3>
+        <div id="paletteSwatches"></div>
+      </div>
+      <p class="notice" id="colorNotice" role="status"></p>
+    </section>
+    <section id="unitTool" class="tool-panel tab-pane" data-pane="unitTool" hidden>
+      <p class="kicker">06 / UNIVERSAL UNIT CONVERTER</p>
+      <h2>Convert everyday units</h2>
+      <p>Convert length, weight, temperature, speed, time, and digital storage units instantly.</p>
+      <div class="form-grid"><label>Category<select id="unitCategory">
+            <option value="length">Length</option>
+            <option value="weight">Weight / Mass</option>
+            <option value="temperature">Temperature</option>
+            <option value="speed">Speed</option>
+            <option value="time">Time</option>
+            <option value="storage">Digital storage</option>
+          </select></label><label>Value<input id="unitValue" type="number" value="1"
+            step="any"></label><label>From<select id="unitFrom"></select></label><label>To<select
+            id="unitTo"></select></label></div>
+      <div class="unit-result"><span>Converted result</span><strong id="unitResult">1 meter</strong></div>
+      <p class="notice" id="unitNotice" role="status"></p>
+    </section>
+    <footer><span>My ToolBox © 2026</span><span>Useful tools, thoughtfully made.</span></footer>
+  </main>
+  <div id="qrWorkArea" class="qr-work-area" aria-hidden="true"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="script.js"></script>
+  <script src="tools.js"></script>
+  <script>
+    document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => {const target = button.dataset.tab; document.querySelectorAll('.nav-tab').forEach(b => {const active = b === button; b.classList.toggle('active', active); b.setAttribute('aria-selected', String(active))}); document.querySelectorAll('.tab-pane').forEach(p => {p.hidden = p.id !== target}); window.scrollTo({top: 0, behavior: 'smooth'})}));
+  </script>
+</body>
+
+</html>
