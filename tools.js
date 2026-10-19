@@ -26,10 +26,46 @@ $("imageFile").addEventListener("change", () => {
     );
   im.src = url;
 });
-$("imageQuality").addEventListener(
-  "input",
-  () => ($("qualityOut").textContent = $("imageQuality").value + "%"),
-);
+function updateImageQualityTrack() {
+  const quality = $("imageQuality");
+  const percentage =
+    ((Number(quality.value) - Number(quality.min)) /
+      (Number(quality.max) - Number(quality.min))) *
+    100;
+  quality.style.background = `linear-gradient(90deg, #a34a5a ${percentage}%, rgba(255,255,255,.14) ${percentage}%)`;
+  $("qualityOut").textContent = quality.value + "%";
+}
+
+$("imageQuality").addEventListener("input", updateImageQualityTrack);
+updateImageQualityTrack();
+
+function imageBlobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") resolve(reader.result);
+      else reject(new Error("Could not read the converted image."));
+    };
+    reader.onerror = () =>
+      reject(reader.error || new Error("Could not read the converted image."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function createIcoBlob(pngBlob, width, height) {
+  const header = new ArrayBuffer(22);
+  const view = new DataView(header);
+  view.setUint16(2, 1, true);
+  view.setUint16(4, 1, true);
+  view.setUint8(6, width === 256 ? 0 : width);
+  view.setUint8(7, height === 256 ? 0 : height);
+  view.setUint16(10, 1, true);
+  view.setUint16(12, 32, true);
+  view.setUint32(14, pngBlob.size, true);
+  view.setUint32(18, 22, true);
+  return new Blob([header, pngBlob], { type: "image/x-icon" });
+}
+
 $("convertImage").addEventListener("click", () => {
   if (!sourceImage) {
     say("imageNotice", "Please select an image first.");
@@ -44,27 +80,59 @@ $("convertImage").addEventListener("click", () => {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
-  c.getContext("2d").drawImage(sourceImage, 0, 0, w, h);
+  const context = c.getContext("2d");
+  if (!context) {
+    say("imageNotice", "Your browser could not prepare the image for conversion.");
+    return;
+  }
+  context.drawImage(sourceImage, 0, 0, w, h);
   const type = $("imageFormat").value;
+  if (type === "image/x-icon" && (w > 256 || h > 256)) {
+    say("imageNotice", "ICO images must be 256 × 256 pixels or smaller.");
+    return;
+  }
+  const rasterType =
+    type === "image/x-icon" || type === "image/svg+xml" ? "image/png" : type;
   c.toBlob(
-    (blob) => {
+    async (blob) => {
       if (!blob) {
         say("imageNotice", "Conversion failed. Try a different format.");
         return;
       }
-      downloadBlob(
-        blob,
-        "converted-image." +
-          { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[
+      try {
+        let outputBlob = blob;
+        let extension;
+        let format;
+        if (type === "image/x-icon") {
+          outputBlob = createIcoBlob(blob, w, h);
+          extension = "ico";
+          format = "ICO";
+        } else if (type === "image/svg+xml") {
+          const dataUrl = await imageBlobToDataUrl(blob);
+          outputBlob = new Blob(
+            [
+              `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><image width="${w}" height="${h}" href="${dataUrl}"/></svg>`,
+            ],
+            { type: "image/svg+xml" },
+          );
+          extension = "svg";
+          format = "SVG";
+        } else {
+          extension = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[
             type
-          ],
-      );
-      say(
-        "imageNotice",
-        `Converted to ${w} × ${h} ${type.split("/")[1].toUpperCase()} successfully.`,
-      );
+          ];
+          format = type.split("/")[1].toUpperCase();
+        }
+        downloadBlob(outputBlob, `converted-image.${extension}`);
+        say("imageNotice", `Converted to ${w} × ${h} ${format} successfully.`);
+      } catch (error) {
+        say(
+          "imageNotice",
+          `Conversion failed: ${error.message || "could not create the output file."}`,
+        );
+      }
     },
-    type,
+    rasterType,
     Number($("imageQuality").value) / 100,
   );
 });
