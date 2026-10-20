@@ -31,7 +31,7 @@
 }
 
 html {
-  min-width: 320px;
+  min-width: 0;
 }
 
 body {
@@ -100,10 +100,18 @@ body {
   font: 700 23px "Space Grotesk", sans-serif;
   letter-spacing: -1px;
   text-decoration: none;
+  min-width: 0;
+  white-space: normal;
 }
 
 .brand-accent {
   color: var(--gold);
+}
+
+.brand > span:last-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .brand-mark {
@@ -864,7 +872,8 @@ footer {
 
 @media (max-width: 480px) {
   .app-shell {
-    width: calc(100% - 24px);
+    width: calc(100% - 20px);
+    min-width: 0;
   }
 
   .topbar {
@@ -873,7 +882,8 @@ footer {
   }
 
   .brand {
-    font-size: 20px;
+    gap: 8px;
+    font-size: clamp(16px, 5vw, 20px);
   }
 
   .topbar-note {

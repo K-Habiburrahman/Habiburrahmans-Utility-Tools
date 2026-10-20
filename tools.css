@@ -46,8 +46,8 @@ body {
     display: flex;
     gap: 6px;
     align-items: center;
-    white-space: nowrap;
-    flex-shrink: 0
+    flex-shrink: 1;
+    max-width: 100%
 }
 
 .brand-mark {
@@ -142,6 +142,7 @@ body {
 
 .tool-panel {
     display: block;
+    min-width: 0;
     padding: clamp(20px, 4vw, 34px);
     margin: 0 0 18px;
     border: 1px solid var(--line);
@@ -210,6 +211,7 @@ body {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: 16px;
     margin: 18px 0
 }
@@ -322,7 +324,7 @@ body {
 
 .color-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px
 }
 
@@ -458,4 +460,292 @@ textarea:focus-visible {
         gap: 12px;
         flex-wrap: wrap
     }
+}
+
+.qr-tool-panel .workspace {
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+        gap: 24px
+}
+
+.qr-tool-panel .editor,
+.qr-tool-panel .preview-card {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none
+}
+
+.qr-tool-panel .panel-heading {
+        margin-bottom: 25px
+}
+
+.qr-tool-panel h2 {
+        margin: 8px 0;
+        font: 700 27px 'Space Grotesk', sans-serif
+}
+
+.qr-tool-panel .field-label {
+        display: block;
+        margin-bottom: 9px;
+        color: #e9dfe0
+}
+
+.qr-tool-panel .field-hint,
+.qr-tool-panel .range-labels {
+        color: var(--muted)
+}
+
+.qr-tool-panel .section-divider {
+        height: 1px;
+        margin: 23px 0;
+        background: var(--line)
+}
+
+.qr-tool-panel .subheading-row {
+        margin-bottom: 13px
+}
+
+.qr-tool-panel .color-control {
+        color: var(--muted)
+}
+
+.qr-tool-panel .color-picker-wrap {
+        padding: 7px 9px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #170e12
+}
+
+.qr-tool-panel .color-picker-wrap code {
+        color: var(--text)
+}
+
+.qr-tool-panel input[type="color"] {
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border: 0;
+        border-radius: 7px;
+        background: transparent
+}
+
+.qr-tool-panel .swatch.active {
+        box-shadow: 0 0 0 2px var(--wine)
+}
+
+.qr-tool-panel #sizeValue {
+        color: #d8c779
+}
+
+.qr-tool-panel input[type="range"] {
+        accent-color: #a34a5a
+}
+
+.qr-tool-panel .upload-zone {
+        border-color: #81505b;
+        border-radius: 15px;
+        background: #21151a;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none
+}
+
+.qr-tool-panel .upload-zone:hover {
+        border-color: #c77c83;
+        background: #2b1b21
+}
+
+.qr-tool-panel .upload-icon,
+.qr-tool-panel .upload-action {
+        border-color: var(--line);
+        background: #24171c;
+        color: #d18b91;
+        box-shadow: none
+}
+
+.qr-tool-panel .upload-copy small,
+.qr-tool-panel .small-note {
+        color: var(--muted)
+}
+
+.qr-tool-panel .remove-logo {
+        color: #c77c83
+}
+
+.qr-tool-panel .button {
+        border-color: var(--line);
+        border-radius: 11px;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: none
+}
+
+.qr-tool-panel .button-quiet {
+        background: #24171c;
+        color: #e9dfe0
+}
+
+.qr-tool-panel .button-quiet:hover {
+        background: #332027
+}
+
+.qr-tool-panel .button-primary {
+        border-color: #a74a5a;
+        background: var(--wine);
+        color: #fff;
+        box-shadow: none
+}
+
+.qr-tool-panel .button-primary:hover {
+        background: #a33d51;
+        box-shadow: none
+}
+
+.qr-tool-panel .notice {
+        color: #d6c98a;
+        font-size: 12px
+}
+
+.qr-tool-panel .live-pill {
+        border-color: rgba(129, 141, 71, .45);
+        background: rgba(129, 141, 71, .16);
+        color: #b9c47a;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none
+}
+
+.qr-tool-panel .qr-stage {
+        min-height: 350px
+}
+
+.qr-tool-panel .qr-frame {
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 12px 30px #0004
+}
+
+.qr-tool-panel .qr-orbit,
+.qr-tool-panel .float-star {
+        display: none
+}
+
+.qr-tool-panel .preview-caption,
+.qr-tool-panel .tip-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #21151a;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none
+}
+
+.qr-tool-panel .preview-caption {
+        padding: 14px 15px
+}
+
+.qr-tool-panel .preview-caption small {
+        color: var(--muted)
+}
+
+.qr-tool-panel .caption-icon {
+        border-color: var(--line);
+        background: #482630;
+        color: #d18b91
+}
+
+.qr-tool-panel .tip-card {
+        padding: 17px 19px
+}
+
+.qr-tool-panel .tip-icon {
+        border-color: var(--line);
+        background: #303923;
+        color: #c4cf86
+}
+
+.qr-tool-panel .tip-card p {
+        color: var(--muted)
+}
+
+.qr-tool-panel .privacy-note {
+        color: var(--muted)
+}
+
+.qr-tool-panel .lock-icon {
+        color: #b9c47a
+}
+
+@media(max-width:850px) {
+        .qr-tool-panel .workspace {
+            grid-template-columns: 1fr
+        }
+
+        .qr-tool-panel .preview-card {
+            padding: 0
+        }
+}
+
+@media(max-width:620px) {
+        .tool-panel {
+            padding: 20px 15px;
+            border-radius: 18px
+        }
+
+        .panel-head {
+            gap: 12px
+        }
+
+        .tool-panel h2 {
+            font-size: clamp(22px, 6vw, 27px);
+            overflow-wrap: anywhere
+        }
+
+        .form-grid,
+        .color-layout {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px
+        }
+
+        .tool-panel label,
+        .form-grid > *,
+        .color-layout > * {
+            min-width: 0
+        }
+
+        .dropzone {
+            padding: 20px 12px
+        }
+
+        .primary,
+        .secondary {
+            max-width: 100%;
+            white-space: normal
+        }
+
+        .qr-tool-panel .editor {
+            padding: 0
+        }
+
+        .qr-tool-panel .qr-stage {
+            min-height: 310px
+        }
+}
+
+@media(max-width:360px) {
+        .qr-tool-panel .color-grid {
+            grid-template-columns: minmax(0, 1fr)
+        }
+
+        .qr-tool-panel .action-row {
+            grid-template-columns: minmax(0, .7fr) minmax(0, 1.4fr);
+            gap: 8px
+        }
+
+        .qr-tool-panel .button {
+            padding: 8px
+        }
 }
