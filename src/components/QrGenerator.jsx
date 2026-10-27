@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 
 const DEFAULTS = { text: "https://example.com", fg: "#8b2c3d", bg: "#ffffff", size: 320 };
+const HISTORY_KEY = "utility-tools-qr-history";
 const SWATCHES = [
   { cls: "swatch-dark", fg: "#8b2c3d", bg: "#ffffff", label: "Burgundy theme" },
   { cls: "swatch-purple", fg: "#211b20", bg: "#f4e9e4", label: "Midnight theme" },
@@ -9,6 +10,28 @@ const SWATCHES = [
   { cls: "swatch-pink", fg: "#8b2c3d", bg: "#fff4f5", label: "Rose theme" },
   { cls: "swatch-blue", fg: "#80601e", bg: "#fffdf5", label: "Gold theme" },
 ];
+
+function HistoryQrPreview({ entry }) {
+  const canvasRef = useRef(null);
+  const [previewError, setPreviewError] = useState(false);
+
+  useEffect(() => {
+    setPreviewError(false);
+    QRCode.toCanvas(canvasRef.current, entry.text, {
+      width: 120,
+      margin: 1,
+      errorCorrectionLevel: "H",
+      color: { dark: entry.fg, light: entry.bg },
+    }).catch((err) => {
+      console.error(err);
+      setPreviewError(true);
+    });
+  }, [entry.text, entry.fg, entry.bg]);
+
+  return previewError
+    ? <span className="history-qr-error" role="img" aria-label="QR preview unavailable">Preview unavailable</span>
+    : <canvas ref={canvasRef} aria-label={`QR preview for ${entry.name}`} />;
+}
 
 async function paintQr(canvas, { text, fg, bg, size, logo }) {
   await QRCode.toCanvas(canvas, text, {
@@ -38,9 +61,12 @@ async function paintQr(canvas, { text, fg, bg, size, logo }) {
 
 export default function QrGenerator({ id, hidden }) {
   const [text, setText] = useState(DEFAULTS.text);
+  const [qrName, setQrName] = useState("");
   const [fg, setFg] = useState(DEFAULTS.fg);
   const [bg, setBg] = useState(DEFAULTS.bg);
   const [size, setSize] = useState(DEFAULTS.size);
+  const [history, setHistory] = useState([]);
+  const [historyError, setHistoryError] = useState(false);
   const [logo, setLogo] = useState(null); // { image, name }
   const [activeSwatch, setActiveSwatch] = useState(0);
   const [notice, setNotice] = useState({ msg: "", error: false });
@@ -51,6 +77,32 @@ export default function QrGenerator({ id, hidden }) {
 
   const say = (msg, error = false) => setNotice({ msg, error });
   const trimmed = text.trim();
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(HISTORY_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!Array.isArray(parsed) || !parsed.every((entry) =>
+          entry &&
+          typeof entry.id === "string" &&
+          typeof entry.name === "string" &&
+          typeof entry.text === "string" &&
+          typeof entry.fg === "string" &&
+          typeof entry.bg === "string" &&
+          typeof entry.size === "number" &&
+          typeof entry.createdAt === "string"
+        )) {
+          throw new Error("QR history has an invalid format.");
+        }
+        setHistory(parsed);
+      }
+    } catch (err) {
+      console.error(err);
+      setHistoryError(true);
+      say("QR history could not be loaded from this browser.", true);
+    }
+  }, []);
 
   // Live preview (debounced)
   useEffect(() => {
@@ -104,6 +156,57 @@ export default function QrGenerator({ id, hidden }) {
     image.src = url;
   };
 
+  const saveHistory = (entry) => {
+    try {
+      const nextHistory = [entry, ...history];
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+      setHistory(nextHistory);
+      setHistoryError(false);
+      return true;
+    } catch (err) {
+      console.error(err);
+      setHistoryError(true);
+      say("PNG downloaded, but this QR code could not be saved to history.", true);
+      return false;
+    }
+  };
+
+  const removeHistoryEntry = (entryId) => {
+    try {
+      const nextHistory = history.filter((entry) => entry.id !== entryId);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+      setHistory(nextHistory);
+      setHistoryError(false);
+    } catch (err) {
+      console.error(err);
+      setHistoryError(true);
+      say("Could not update QR history in this browser.", true);
+    }
+  };
+
+  const clearHistory = () => {
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+      setHistory([]);
+      setHistoryError(false);
+    } catch (err) {
+      console.error(err);
+      setHistoryError(true);
+      say("Could not clear QR history in this browser.", true);
+    }
+  };
+
+  const restoreHistoryEntry = (entry) => {
+    setQrName(entry.name);
+    setText(entry.text);
+    setFg(entry.fg);
+    setBg(entry.bg);
+    setSize(entry.size);
+    setActiveSwatch(-1);
+    clearLogo();
+    say(`Loaded "${entry.name}" from history.`);
+  };
+
   const download = async () => {
     if (!trimmed) {
       say("Enter some text or a URL first.", true);
@@ -114,12 +217,23 @@ export default function QrGenerator({ id, hidden }) {
       const canvas = document.createElement("canvas");
       await paintQr(canvas, { text: trimmed, fg, bg, size, logo: logo?.image });
       const a = document.createElement("a");
-      a.download = `qr-code-${Date.now()}.png`;
+      const name = qrName.trim() || "Untitled QR";
+      const fileName = name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").trim() || "qr-code";
+      a.download = `${fileName}.png`;
       a.href = canvas.toDataURL("image/png");
       document.body.appendChild(a);
       a.click();
       a.remove();
-      say("PNG downloaded. Test-scan it before printing.");
+      const historySaved = saveHistory({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        name,
+        text: trimmed,
+        fg,
+        bg,
+        size,
+        createdAt: new Date().toISOString(),
+      });
+      if (historySaved) say("PNG downloaded and saved to history. Test-scan it before printing.");
     } catch (err) {
       console.error(err);
       say("Download failed. Please try again.", true);
@@ -129,6 +243,7 @@ export default function QrGenerator({ id, hidden }) {
   };
 
   const reset = () => {
+    setQrName("");
     setText(DEFAULTS.text);
     setFg(DEFAULTS.fg);
     setBg(DEFAULTS.bg);
@@ -152,6 +267,17 @@ export default function QrGenerator({ id, hidden }) {
             <span className="sparkle" aria-hidden="true">✳</span>
           </div>
 
+          <label className="field-label qr-name-label" htmlFor="qrName">QR name</label>
+          <input
+            id="qrName"
+            type="text"
+            maxLength={60}
+            placeholder="e.g. Business website"
+            value={qrName}
+            onChange={(e) => setQrName(e.target.value)}
+          />
+
+          <div className="section-divider"></div>
           <label className="field-label" htmlFor="qrText">Text or URL</label>
           <textarea
             id="qrText"
@@ -265,16 +391,59 @@ export default function QrGenerator({ id, hidden }) {
               <span className="caption-icon">⌁</span>
               <div><strong>Ready to scan</strong><small>Your QR code updates as you customize it.</small></div>
             </div>
-          </div>
 
-          <div className="tip-card">
-            <div className="tip-icon">✦</div>
-            <div>
-              <strong>A little pro tip</strong>
-              <p>Use strong contrast between your QR color and background. Always test-scan your downloaded code before printing it.</p>
+            <div className="tip-card">
+              <div className="tip-icon">✦</div>
+              <div>
+                <strong>A little pro tip</strong>
+                <p>Use strong contrast between your QR color and background. Always test-scan your downloaded code before printing it.</p>
+              </div>
             </div>
+
+            <div className="privacy-note"><span className="lock-icon">▣</span> Generated in your browser. Your content stays on your device.</div>
+            <section className="qr-history-card" aria-labelledby="qrHistoryHeading">
+              <div className="qr-history-heading">
+                <div>
+                  <span className="step-label">YOUR SAVED CODES</span>
+                  <h3 id="qrHistoryHeading">History</h3>
+                  <p className="history-description">Saved in this browser. Uploaded logo images aren’t stored.</p>
+                </div>
+                {history.length > 0 && (
+                  <button className="history-clear" type="button" onClick={clearHistory}>Clear all</button>
+                )}
+              </div>
+              {historyError ? (
+                <p className="history-empty" role="status">History is unavailable. Check your browser storage settings.</p>
+              ) : history.length === 0 ? (
+                <p className="history-empty">Downloaded QR codes will appear here.</p>
+              ) : (
+                <div className="qr-history-list">
+                  {history.map((entry) => (
+                    <article className="qr-history-item" key={entry.id}>
+                      <button
+                        className="history-restore"
+                        type="button"
+                        onClick={() => restoreHistoryEntry(entry)}
+                        title={`Load ${entry.name} into the customizer`}
+                      >
+                        <span className="history-qr-preview">
+                          <HistoryQrPreview entry={entry} />
+                        </span>
+                        <strong className="history-card-name">{entry.name}</strong>
+                        <time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleDateString()}</time>
+                      </button>
+                      <button
+                        className="history-remove"
+                        type="button"
+                        aria-label={`Remove ${entry.name} from history`}
+                        onClick={() => removeHistoryEntry(entry.id)}
+                      >×</button>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
-          <div className="privacy-note"><span className="lock-icon">▣</span> Generated in your browser. Your content stays on your device.</div>
         </aside>
       </section>
     </section>

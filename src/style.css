@@ -74,7 +74,7 @@ body {
 }
 
 .app-shell {
-  width: min(1160px, calc(100% - 48px));
+  width: min(1680px, calc(100% - 40px));
   margin: 0 auto;
 }
 
@@ -106,7 +106,11 @@ body {
 }
 
 .nav-tab {
-  flex: 0 0 auto;
+  display: inline-flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 10px 14px;
   border: 1px solid transparent;
   border-radius: 12px;
@@ -114,6 +118,7 @@ body {
   color: rgba(244, 233, 228, .75);
   font: 600 12px "DM Sans", sans-serif;
   cursor: pointer;
+  white-space: nowrap;
   transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
 }
 
@@ -874,7 +879,7 @@ footer {
 
 @media (max-width: 850px) {
   .app-shell {
-    width: min(680px, calc(100% - 32px));
+    width: calc(100% - 32px);
   }
 
   .workspace {
@@ -910,7 +915,7 @@ footer {
 
 @media (max-width: 480px) {
   .app-shell {
-    width: calc(100% - 20px);
+    width: calc(100% - 24px);
     min-width: 0;
   }
 
