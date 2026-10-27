@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { convertNumberSystem, NUMBER_SYSTEMS } from "../utils/numberSystems.js";
 
 const UNIT_SETS = {
   length: { label: "Length", units: { Meters: 1, Kilometers: 1000, Centimeters: 0.01, Millimeters: 0.001, Miles: 1609.344, Yards: 0.9144, Feet: 0.3048, Inches: 0.0254 }, from: "Meters", to: "Feet" },
@@ -25,23 +26,44 @@ export default function UnitConverter({ id, hidden }) {
   const [value, setValue] = useState("1");
   const [from, setFrom] = useState("Meters");
   const [to, setTo] = useState("Feet");
+  const [fromCustomBase, setFromCustomBase] = useState("3");
+  const [toCustomBase, setToCustomBase] = useState("3");
 
   const onCategory = (cat) => {
     setCategory(cat);
-    setFrom(UNIT_SETS[cat].from);
-    setTo(UNIT_SETS[cat].to);
+    if (cat === "number") {
+      setFrom("10");
+      setTo("2");
+    } else {
+      setFrom(UNIT_SETS[cat].from);
+      setTo(UNIT_SETS[cat].to);
+    }
   };
 
-  const names = Object.keys(UNIT_SETS[category].units);
+  const numberSystem = category === "number";
+  const names = numberSystem ? [] : Object.keys(UNIT_SETS[category].units);
   const num = Number(value);
-  const valid = value.trim() !== "" && Number.isFinite(num);
-  const out = valid ? convert(category, num, from, to) : null;
+  const valid = value.trim() !== "" && (numberSystem || Number.isFinite(num));
+  let out = null;
+  let conversionError = "";
+  if (valid) {
+    try {
+      out = numberSystem
+        ? convertNumberSystem(value, from, to, fromCustomBase, toCustomBase)
+        : convert(category, num, from, to);
+    } catch (error) {
+      conversionError = error.message;
+    }
+  }
+  const resultText = conversionError
+    ? conversionError
+    : valid ? `${numberSystem ? out : fmt(out)} ${numberSystem ? "" : to}` : "Enter a valid value";
 
   return (
     <section id={id} className="tool-panel tab-pane" role="tabpanel" aria-labelledby={`${id}-tab`} hidden={hidden}>
       <p className="kicker">UNIVERSAL UNIT CONVERTER</p>
       <h2>Convert everyday units</h2>
-      <p>Convert length, weight, temperature, speed, time, and digital storage units instantly.</p>
+      <p>Convert length, weight, temperature, speed, time, digital storage, and number systems.</p>
       <div className="form-grid">
         <label>
           Category
@@ -49,30 +71,68 @@ export default function UnitConverter({ id, hidden }) {
             {Object.entries(UNIT_SETS).map(([k, s]) => (
               <option key={k} value={k}>{s.label}</option>
             ))}
+            <option value="number">Number system</option>
           </select>
         </label>
         <label>
           Value
-          <input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} />
+          {numberSystem ? (
+            <textarea
+              rows="2"
+              placeholder={{
+                ascii: "Enter ASCII text...",
+                bcd: "Enter four-bit BCD groups, e.g. 0001 0010",
+                gray: "Enter Gray code bits, e.g. 1110",
+                roman: "Enter a Roman numeral, e.g. XIV",
+                arabicIndic: "Enter Arabic-Indic digits, e.g. ١٢٣",
+              }[from] || "Enter a number or a list separated by spaces or commas"}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          ) : (
+            <input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} />
+          )}
         </label>
         <label>
           From
           <select value={from} onChange={(e) => setFrom(e.target.value)}>
-            {names.map((n) => <option key={n}>{n}</option>)}
+            {(numberSystem ? NUMBER_SYSTEMS.map((system) => system.value) : names).map((name) => (
+              <option key={name} value={name}>
+                {numberSystem ? NUMBER_SYSTEMS.find((system) => system.value === name).label : name}
+              </option>
+            ))}
           </select>
         </label>
         <label>
           To
           <select value={to} onChange={(e) => setTo(e.target.value)}>
-            {names.map((n) => <option key={n}>{n}</option>)}
+            {(numberSystem ? NUMBER_SYSTEMS.map((system) => system.value) : names).map((name) => (
+              <option key={name} value={name}>
+                {numberSystem ? NUMBER_SYSTEMS.find((system) => system.value === name).label : name}
+              </option>
+            ))}
           </select>
         </label>
+        {numberSystem && from === "other" && (
+          <label>
+            Source base (2–36)
+            <input type="number" min="2" max="36" step="1" value={fromCustomBase} onChange={(e) => setFromCustomBase(e.target.value)} />
+          </label>
+        )}
+        {numberSystem && to === "other" && (
+          <label>
+            Destination base (2–36)
+            <input type="number" min="2" max="36" step="1" value={toCustomBase} onChange={(e) => setToCustomBase(e.target.value)} />
+          </label>
+        )}
       </div>
       <div className="unit-result">
         <span>Converted result</span>
-        <strong>{valid ? `${fmt(out)} ${to}` : "Enter a valid number"}</strong>
+        <strong>{resultText}</strong>
       </div>
-      <p className="notice" role="status">{valid ? `${fmt(num)} ${from} = ${fmt(out)} ${to}` : ""}</p>
+      <p className="notice" role="status">
+        {conversionError || (valid ? numberSystem ? `${value} → ${out}` : `${fmt(num)} ${from} = ${fmt(out)} ${to}` : "")}
+      </p>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { convertNumberSystem, NUMBER_SYSTEMS } from "../utils/numberSystems.js";
 
 function csvParse(s) {
   const rows = [];
@@ -65,6 +66,10 @@ const OPERATIONS = {
 
 export default function DevTools({ id, hidden }) {
   const [mode, setMode] = useState("json");
+  const [fromSystem, setFromSystem] = useState("10");
+  const [toSystem, setToSystem] = useState("2");
+  const [fromCustomBase, setFromCustomBase] = useState("3");
+  const [toCustomBase, setToCustomBase] = useState("3");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [notice, setNotice] = useState("");
@@ -72,7 +77,10 @@ export default function DevTools({ id, hidden }) {
 
   const run = () => {
     try {
-      setOutput(OPERATIONS[mode](input));
+      const result = mode === "number"
+        ? convertNumberSystem(input, fromSystem, toSystem, fromCustomBase, toCustomBase)
+        : OPERATIONS[mode](input);
+      setOutput(result);
       setNotice("Conversion completed.");
     } catch (e) {
       setNotice("Could not convert: " + e.message);
@@ -93,11 +101,12 @@ export default function DevTools({ id, hidden }) {
     <section id={id} className="tool-panel tab-pane" role="tabpanel" aria-labelledby={`${id}-tab`} hidden={hidden}>
       <p className="kicker">DEVELOPER UTILITIES</p>
       <h2>Data & text converters</h2>
-      <p>Format JSON, convert CSV and JSON, or encode/decode Base64 and URL text.</p>
+      <p>Format JSON, convert CSV and JSON, encode/decode text, or convert number systems.</p>
       <div className="form-grid">
         <label>
-          Operation
+          Category
           <select value={mode} onChange={(e) => setMode(e.target.value)}>
+            <option value="number">Number systems</option>
             <option value="json">Format / validate JSON</option>
             <option value="csvjson">CSV → JSON</option>
             <option value="jsoncsv">JSON → CSV</option>
@@ -112,9 +121,50 @@ export default function DevTools({ id, hidden }) {
           <button className="secondary" type="button" onClick={copy}>Copy output</button>
         </label>
       </div>
+      {mode === "number" && (
+        <div className="form-grid">
+          <label>
+            From
+            <select value={fromSystem} onChange={(e) => setFromSystem(e.target.value)}>
+              {NUMBER_SYSTEMS.map((system) => <option key={system.value} value={system.value}>{system.label}</option>)}
+            </select>
+          </label>
+          <label>
+            To
+            <select value={toSystem} onChange={(e) => setToSystem(e.target.value)}>
+              {NUMBER_SYSTEMS.map((system) => <option key={system.value} value={system.value}>{system.label}</option>)}
+            </select>
+          </label>
+          {fromSystem === "other" && (
+            <label>
+              Source base (2–36)
+              <input type="number" min="2" max="36" step="1" value={fromCustomBase} onChange={(e) => setFromCustomBase(e.target.value)} />
+            </label>
+          )}
+          {toSystem === "other" && (
+            <label>
+              Destination base (2–36)
+              <input type="number" min="2" max="36" step="1" value={toCustomBase} onChange={(e) => setToCustomBase(e.target.value)} />
+            </label>
+          )}
+        </div>
+      )}
       <label className="full-label">
         Input
-        <textarea rows="7" placeholder="Paste JSON, CSV, or text here..." value={input} onChange={(e) => setInput(e.target.value)} />
+        <textarea
+          rows="7"
+          placeholder={mode === "number"
+            ? ({
+              ascii: "Enter ASCII text...",
+              bcd: "Enter four-bit BCD groups, e.g. 0001 0010",
+              gray: "Enter Gray code bits, e.g. 1110",
+              roman: "Enter a Roman numeral, e.g. XIV",
+              arabicIndic: "Enter Arabic-Indic digits, e.g. ١٢٣",
+            }[fromSystem] || "Enter a number or space/comma-separated numbers...")
+            : "Paste JSON, CSV, or text here..."}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
       </label>
       <button className="primary" onClick={run}>Convert</button>
       <label className="full-label">
