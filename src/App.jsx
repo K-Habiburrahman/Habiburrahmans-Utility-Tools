@@ -11,13 +11,13 @@ import UnitConverter from "./components/UnitConverter.jsx";
 import Navbar from "./components/Navbar.jsx";
 
 const TABS = [
-  { id: "qrPane", label: "QR Generator", Component: QrGenerator },
-  { id: "imageTool", label: "Image", Component: ImageConverter },
-  { id: "pdfTool", label: "PDF", Component: PdfTool },
-  { id: "devTool", label: "Developer", Component: DevTools },
-  { id: "audioTool", label: "Audio", Component: AudioConverter },
-  { id: "colorTool", label: "Colors", Component: ColorTool },
-  { id: "unitTool", label: "Unit Converter", Component: UnitConverter },
+  { id: "qrPane", label: "QR Generator", icon: "▦", Component: QrGenerator },
+  { id: "imageTool", label: "Image", icon: "▧", Component: ImageConverter },
+  { id: "pdfTool", label: "PDF", icon: "▤", Component: PdfTool },
+  { id: "devTool", label: "Developer", icon: "{ }", Component: DevTools },
+  { id: "audioTool", label: "Audio", icon: "♫", Component: AudioConverter },
+  { id: "colorTool", label: "Colors", icon: "◉", Component: ColorTool },
+  { id: "unitTool", label: "Unit Converter", icon: "↔", Component: UnitConverter },
 ];
 
 export default function App() {
@@ -50,6 +50,10 @@ export default function App() {
               Habiburrahman's <span className="brand-accent">Utility Tools</span>
             </span>
           </a>
+          <div className="topbar-note">
+            <span className="status-dot" />
+            <span>Simple tools, right in your browser</span>
+          </div>
         </header>
 
         <Navbar tabs={TABS} activeTab={active} onSelect={selectTab} />
@@ -61,7 +65,7 @@ export default function App() {
 
         <footer>
           <span>Habiburrahman's Utility Tools © 2026</span>
-          <span>Useful tools, thoughtfully made.</span>
+          <span>Useful tools, thoughtfully made. · Your files stay yours.</span>
         </footer>
       </main>
     </>
